@@ -33,7 +33,6 @@ import com.google.ar.core.TrackingState;
 import com.google.ar.core.examples.java.common.helpers.CameraPermissionHelper;
 import com.google.ar.core.examples.java.common.helpers.DisplayRotationHelper;
 import com.google.ar.core.examples.java.common.helpers.FullScreenHelper;
-import com.google.ar.core.examples.java.common.helpers.SnackbarHelper;
 import com.google.ar.core.examples.java.common.helpers.TrackingStateHelper;
 import com.google.ar.core.exceptions.CameraNotAvailableException;
 import com.google.ar.core.exceptions.NotYetAvailableException;
@@ -59,7 +58,6 @@ public class RawDepthActivity extends AppCompatActivity implements GLSurfaceView
   private boolean installRequested;
 
   private Session session;
-  private final SnackbarHelper messageSnackbarHelper = new SnackbarHelper();
   private DisplayRotationHelper displayRotationHelper;
   private final TrackingStateHelper trackingStateHelper = new TrackingStateHelper(this);
 
@@ -129,7 +127,7 @@ public class RawDepthActivity extends AppCompatActivity implements GLSurfaceView
 
     if (session == null) {
       Exception exception = null;
-      String message = null;
+
       try {
         switch (ArCoreApk.getInstance().requestInstall(this, !installRequested)) {
           case INSTALL_REQUESTED:
@@ -150,29 +148,22 @@ public class RawDepthActivity extends AppCompatActivity implements GLSurfaceView
         session = new Session(/* context= */ this);
       } catch (UnavailableArcoreNotInstalledException
           | UnavailableUserDeclinedInstallationException e) {
-        message = "Please install ARCore";
         exception = e;
       } catch (UnavailableApkTooOldException e) {
-        message = "Please update ARCore";
         exception = e;
       } catch (UnavailableSdkTooOldException e) {
-        message = "Please update this app";
         exception = e;
       } catch (UnavailableDeviceNotCompatibleException e) {
-        message = "This device does not support AR";
         exception = e;
       } catch (RuntimeException e) {
-        message = "Failed to create AR session";
         exception = e;
       }
 
       if (!session.isDepthModeSupported(Config.DepthMode.RAW_DEPTH_ONLY)) {
-        message = "This device does not support the ARCore Raw Depth API.";
         session = null;
       }
 
-      if (message != null) {
-        messageSnackbarHelper.showError(this, message);
+      if (exception != null) {
         Log.e(TAG, "Exception creating session", exception);
         return;
       }
@@ -189,15 +180,12 @@ public class RawDepthActivity extends AppCompatActivity implements GLSurfaceView
         session.resume();
       }
     } catch (CameraNotAvailableException e) {
-      messageSnackbarHelper.showError(this, "Camera not available. Try restarting the app.");
       session = null;
       return;
     }
 
     surfaceView.onResume();
     displayRotationHelper.onResume();
-
-    messageSnackbarHelper.showMessage(this, "No depth yet. Try moving the device.");
   }
 
   @Override
@@ -302,12 +290,6 @@ public class RawDepthActivity extends AppCompatActivity implements GLSurfaceView
         camera.getProjectionMatrix(projectionMatrix, 0, 0.1f, 100.0f);
         float[] viewMatrix = new float[16];
         camera.getViewMatrix(viewMatrix, 0);
-
-        // Visualize depth points.
-        // renderer.draw(viewMatrix, projectionMatrix);
-
-        // Hide all user notifications when the frame has been rendered successfully.
-        messageSnackbarHelper.hide(this);
       } catch (Throwable t) {
         // Avoid crashing the application due to unhandled exceptions.
         Log.e(TAG, "Exception on the OpenGL thread", t);
