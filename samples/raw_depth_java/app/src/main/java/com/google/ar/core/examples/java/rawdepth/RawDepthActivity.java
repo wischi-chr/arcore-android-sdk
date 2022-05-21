@@ -164,13 +164,9 @@ public class RawDepthActivity extends AppCompatActivity implements GLSurfaceView
         session.setCameraTextureNames(new int[] {0});
 
         Frame frame = session.update();
-        Camera camera = frame.getCamera();
+        frame.getCamera();
+        frame.acquireRawDepthImage16Bits();
 
-        try (Image ignored = frame.acquireRawDepthImage16Bits()) {
-
-        } catch (NotYetAvailableException e) {
-          // This is normal at the beginning of session, where depth hasn't been estimated yet.
-        }
       } catch (Throwable t) {
         // Avoid crashing the application due to unhandled exceptions.
         Log.e(TAG, "Exception on the OpenGL thread", t);
