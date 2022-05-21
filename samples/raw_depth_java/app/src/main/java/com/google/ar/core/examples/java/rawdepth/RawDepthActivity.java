@@ -31,7 +31,6 @@ import com.google.ar.core.Frame;
 import com.google.ar.core.Session;
 import com.google.ar.core.TrackingState;
 import com.google.ar.core.examples.java.common.helpers.CameraPermissionHelper;
-import com.google.ar.core.examples.java.common.helpers.DisplayRotationHelper;
 import com.google.ar.core.examples.java.common.helpers.FullScreenHelper;
 import com.google.ar.core.examples.java.common.helpers.TrackingStateHelper;
 import com.google.ar.core.exceptions.CameraNotAvailableException;
@@ -41,7 +40,7 @@ import com.google.ar.core.exceptions.UnavailableArcoreNotInstalledException;
 import com.google.ar.core.exceptions.UnavailableDeviceNotCompatibleException;
 import com.google.ar.core.exceptions.UnavailableSdkTooOldException;
 import com.google.ar.core.exceptions.UnavailableUserDeclinedInstallationException;
-import java.io.IOException;
+
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
@@ -58,7 +57,6 @@ public class RawDepthActivity extends AppCompatActivity implements GLSurfaceView
   private boolean installRequested;
 
   private Session session;
-  private DisplayRotationHelper displayRotationHelper;
   private final TrackingStateHelper trackingStateHelper = new TrackingStateHelper(this);
 
   // This lock prevents accessing the frame images while Session is paused.
@@ -72,7 +70,6 @@ public class RawDepthActivity extends AppCompatActivity implements GLSurfaceView
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_main);
     surfaceView = findViewById(R.id.surfaceview);
-    displayRotationHelper = new DisplayRotationHelper(/*context=*/ this);
 
     // Set up rendering.
     surfaceView.setPreserveEGLContextOnPause(true);
@@ -180,7 +177,6 @@ public class RawDepthActivity extends AppCompatActivity implements GLSurfaceView
     }
 
     surfaceView.onResume();
-    displayRotationHelper.onResume();
   }
 
   @Override
@@ -190,7 +186,6 @@ public class RawDepthActivity extends AppCompatActivity implements GLSurfaceView
       // Note that the order matters - see note in onResume().
       // GLSurfaceView is paused before pausing the ARCore session, to prevent onDrawFrame() from
       // calling session.update() on a paused session.
-      displayRotationHelper.onPause();
       surfaceView.onPause();
       session.pause();
     }
@@ -223,7 +218,6 @@ public class RawDepthActivity extends AppCompatActivity implements GLSurfaceView
 
   @Override
   public void onSurfaceChanged(GL10 gl, int width, int height) {
-    displayRotationHelper.onSurfaceChanged(width, height);
     GLES20.glViewport(0, 0, width, height);
   }
 
@@ -238,9 +232,6 @@ public class RawDepthActivity extends AppCompatActivity implements GLSurfaceView
 
     // Synchronize prevents session.update() call while paused, see note in onPause().
     synchronized (frameInUseLock) {
-      // Notify ARCore that the view size changed so that the perspective matrix can be adjusted.
-      displayRotationHelper.updateSessionIfNeeded(session);
-
       try {
         session.setCameraTextureNames(new int[] {0});
 
