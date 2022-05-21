@@ -21,7 +21,6 @@ import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.util.Log;
-import android.widget.SeekBar;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import com.google.ar.core.ArCoreApk;
@@ -31,7 +30,6 @@ import com.google.ar.core.Frame;
 import com.google.ar.core.Session;
 import com.google.ar.core.TrackingState;
 import com.google.ar.core.examples.java.common.helpers.CameraPermissionHelper;
-import com.google.ar.core.examples.java.common.helpers.FullScreenHelper;
 import com.google.ar.core.examples.java.common.helpers.TrackingStateHelper;
 import com.google.ar.core.exceptions.CameraNotAvailableException;
 import com.google.ar.core.exceptions.NotYetAvailableException;
@@ -79,25 +77,8 @@ public class RawDepthActivity extends AppCompatActivity implements GLSurfaceView
     surfaceView.setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
     surfaceView.setWillNotDraw(false);
 
-    // Set up confidence threshold slider.
-    SeekBar seekBar = findViewById(R.id.slider);
-    seekBar.setProgress(seekBar.getMax());
-    seekBar.setOnSeekBarChangeListener(seekBarChangeListener);
-
     installRequested = false;
   }
-
-  private SeekBar.OnSeekBarChangeListener seekBarChangeListener =
-      new SeekBar.OnSeekBarChangeListener() {
-        @Override
-        public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {}
-
-        @Override
-        public void onStartTrackingTouch(SeekBar seekBar) {}
-
-        @Override
-        public void onStopTrackingTouch(SeekBar seekBar) {}
-      };
 
   @Override
   protected void onDestroy() {
@@ -203,12 +184,6 @@ public class RawDepthActivity extends AppCompatActivity implements GLSurfaceView
       }
       finish();
     }
-  }
-
-  @Override
-  public void onWindowFocusChanged(boolean hasFocus) {
-    super.onWindowFocusChanged(hasFocus);
-    FullScreenHelper.setFullScreenOnWindowFocusChanged(this, hasFocus);
   }
 
   @Override
