@@ -61,8 +61,6 @@ public class RawDepthActivity extends AppCompatActivity implements GLSurfaceView
   private DisplayRotationHelper displayRotationHelper;
   private final TrackingStateHelper trackingStateHelper = new TrackingStateHelper(this);
 
-  private final Renderer renderer = new Renderer();
-
   // This lock prevents accessing the frame images while Session is paused.
   private final Object frameInUseLock = new Object();
 
@@ -86,7 +84,7 @@ public class RawDepthActivity extends AppCompatActivity implements GLSurfaceView
 
     // Set up confidence threshold slider.
     SeekBar seekBar = findViewById(R.id.slider);
-    seekBar.setProgress((int) (renderer.getPointAmount() * seekBar.getMax()));
+    seekBar.setProgress(seekBar.getMax());
     seekBar.setOnSeekBarChangeListener(seekBarChangeListener);
 
     installRequested = false;
@@ -95,10 +93,7 @@ public class RawDepthActivity extends AppCompatActivity implements GLSurfaceView
   private SeekBar.OnSeekBarChangeListener seekBarChangeListener =
       new SeekBar.OnSeekBarChangeListener() {
         @Override
-        public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-          float progressNormalized = (float) progress / seekBar.getMax();
-          renderer.setPointAmount(progressNormalized);
-        }
+        public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {}
 
         @Override
         public void onStartTrackingTouch(SeekBar seekBar) {}
@@ -224,13 +219,6 @@ public class RawDepthActivity extends AppCompatActivity implements GLSurfaceView
   @Override
   public void onSurfaceCreated(GL10 gl, EGLConfig config) {
     GLES20.glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-
-    // Prepare the rendering objects. This involves reading shaders, so may throw an IOException.
-    try {
-      renderer.createOnGlThread(/*context=*/ this);
-    } catch (IOException e) {
-      Log.e(TAG, "Failed to read an asset file", e);
-    }
   }
 
   @Override

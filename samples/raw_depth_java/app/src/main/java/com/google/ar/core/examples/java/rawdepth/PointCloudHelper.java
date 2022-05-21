@@ -64,7 +64,7 @@ public final class PointCloudHelper {
     int step = calculateImageSubsamplingStep(depthWidth, depthHeight, pointLimit);
     FloatBuffer points =
         FloatBuffer.allocate(
-            depthWidth / step * depthHeight / step * Renderer.POSITION_FLOATS_PER_POINT);
+            depthWidth / step * depthHeight / step * 4);
 
     for (int y = 0; y < depthHeight; y += step) {
       for (int x = 0; x < depthWidth; x += step) {
@@ -151,7 +151,7 @@ public final class PointCloudHelper {
     int step = calculateImageSubsamplingStep(depthWidth, depthHeight, pointLimit);
     FloatBuffer colors =
         FloatBuffer.allocate(
-            depthWidth / step * depthHeight / step * Renderer.COLOR_FLOATS_PER_POINT);
+            depthWidth / step * depthHeight / step * 3);
 
     float rgb[] = new float[3]; // Reusable space for 3-channel color values.
 
