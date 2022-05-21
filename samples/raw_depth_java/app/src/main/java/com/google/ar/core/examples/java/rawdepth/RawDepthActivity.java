@@ -16,26 +16,14 @@
 
 package com.google.ar.core.examples.java.rawdepth;
 
-import android.media.Image;
-import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.util.Log;
 
 import androidx.appcompat.app.AppCompatActivity;
-import com.google.ar.core.ArCoreApk;
-import com.google.ar.core.Camera;
+
 import com.google.ar.core.Config;
-import com.google.ar.core.Frame;
 import com.google.ar.core.Session;
-import com.google.ar.core.TrackingState;
-import com.google.ar.core.exceptions.CameraNotAvailableException;
-import com.google.ar.core.exceptions.NotYetAvailableException;
-import com.google.ar.core.exceptions.UnavailableApkTooOldException;
-import com.google.ar.core.exceptions.UnavailableArcoreNotInstalledException;
-import com.google.ar.core.exceptions.UnavailableDeviceNotCompatibleException;
-import com.google.ar.core.exceptions.UnavailableSdkTooOldException;
-import com.google.ar.core.exceptions.UnavailableUserDeclinedInstallationException;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -47,101 +35,44 @@ import javax.microedition.khronos.opengles.GL10;
 public class RawDepthActivity extends AppCompatActivity implements GLSurfaceView.Renderer {
   private static final String TAG = RawDepthActivity.class.getSimpleName();
 
-  private boolean installRequested;
-
   private Session session;
-
-  // This lock prevents accessing the frame images while Session is paused.
-  private final Object frameInUseLock = new Object();
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_main);
 
-    installRequested = false;
+    try {
+      session = new Session(this);
+
+      // Enable raw depth estimation and auto focus mode while ARCore is running.
+      Config config = session.getConfig();
+      config.setDepthMode(Config.DepthMode.RAW_DEPTH_ONLY);
+      session.configure(config);
+      session.resume();
+    }
+    catch (Throwable t) {
+      Log.e(TAG, "Exception creating session", t);
+      // just to shut up the compiler.
+    }
   }
 
   @Override
   protected void onDestroy() {
-    if (session != null) {
-      // Explicitly close ARCore Session to release native resources.
-      // Review the API reference for important considerations before calling close() in apps with
-      // more complicated lifecycle requirements:
-      // https://developers.google.com/ar/reference/java/arcore/reference/com/google/ar/core/Session#close()
-      session.close();
-      session = null;
-    }
-
+    // Not needed to reproduce the bug. App crashes anyway, no need for cleanup ;-)
     super.onDestroy();
   }
 
   @Override
   protected void onResume() {
+    // Pause and Resume is not supported. App is just used to reproduce a bug.
     super.onResume();
-
-    if (session == null) {
-      Exception exception = null;
-
-      try {
-        switch (ArCoreApk.getInstance().requestInstall(this, !installRequested)) {
-          case INSTALL_REQUESTED:
-            installRequested = true;
-            return;
-          case INSTALLED:
-            break;
-        }
-
-        // Create the session.
-        session = new Session(/* context= */ this);
-      } catch (UnavailableArcoreNotInstalledException
-          | UnavailableUserDeclinedInstallationException e) {
-        exception = e;
-      } catch (UnavailableApkTooOldException e) {
-        exception = e;
-      } catch (UnavailableSdkTooOldException e) {
-        exception = e;
-      } catch (UnavailableDeviceNotCompatibleException e) {
-        exception = e;
-      } catch (RuntimeException e) {
-        exception = e;
-      }
-
-      if (!session.isDepthModeSupported(Config.DepthMode.RAW_DEPTH_ONLY)) {
-        session = null;
-      }
-
-      if (exception != null) {
-        Log.e(TAG, "Exception creating session", exception);
-        return;
-      }
-    }
-
-    // Note that order matters - see the note in onPause(), the reverse applies here.
-    try {
-      // Wait until the frame is no longer being processed.
-      synchronized (frameInUseLock) {
-        // Enable raw depth estimation and auto focus mode while ARCore is running.
-        Config config = session.getConfig();
-        config.setDepthMode(Config.DepthMode.RAW_DEPTH_ONLY);
-        session.configure(config);
-        session.resume();
-      }
-    } catch (CameraNotAvailableException e) {
-      session = null;
-      return;
-    }
   }
 
   @Override
   public void onPause() {
+    // Pause and Resume is not supported. App is just used to reproduce a bug.
     super.onPause();
-    if (session != null) {
-      // Note that the order matters - see note in onResume().
-      // GLSurfaceView is paused before pausing the ARCore session, to prevent onDrawFrame() from
-      // calling session.update() on a paused session.
-      session.pause();
-    }
   }
 
   @Override
@@ -158,17 +89,11 @@ public class RawDepthActivity extends AppCompatActivity implements GLSurfaceView
       return;
     }
 
-    // Synchronize prevents session.update() call while paused, see note in onPause().
-    synchronized (frameInUseLock) {
-      try {
-
-        Frame frame = session.update();
-        frame.getCamera();
-
-      } catch (Throwable t) {
-        // Avoid crashing the application due to unhandled exceptions.
-        Log.e(TAG, "Exception on the OpenGL thread", t);
-      }
+    try {
+      session.update();
+    } catch (Throwable t) {
+      // Avoid crashing the application due to unhandled exceptions.
+      Log.e(TAG, "Exception on the OpenGL thread", t);
     }
   }
 }
