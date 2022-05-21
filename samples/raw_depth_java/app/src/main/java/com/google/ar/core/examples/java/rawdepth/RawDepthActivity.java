@@ -165,15 +165,7 @@ public class RawDepthActivity extends AppCompatActivity implements GLSurfaceView
 
         Frame frame = session.update();
         Camera camera = frame.getCamera();
-
-        if (camera.getTrackingState() != TrackingState.TRACKING) {
-          // If motion tracking is not available but previous depth is available, notify the user
-          // that the app will resume with tracking.
-
-          // If not tracking, do not render the point cloud.
-          return;
-        }
-
+        camera.getTrackingState();
 
         try (Image ignored = frame.acquireRawDepthImage16Bits()) {
 
