@@ -164,7 +164,6 @@ public class RawDepthActivity extends AppCompatActivity implements GLSurfaceView
 
         Frame frame = session.update();
         frame.getCamera();
-        frame.acquireRawDepthImage16Bits();
 
       } catch (Throwable t) {
         // Avoid crashing the application due to unhandled exceptions.
