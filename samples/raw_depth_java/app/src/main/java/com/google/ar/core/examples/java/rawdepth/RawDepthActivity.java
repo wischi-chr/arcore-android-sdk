@@ -161,7 +161,6 @@ public class RawDepthActivity extends AppCompatActivity implements GLSurfaceView
     // Synchronize prevents session.update() call while paused, see note in onPause().
     synchronized (frameInUseLock) {
       try {
-        session.setCameraTextureNames(new int[] {0});
 
         Frame frame = session.update();
         frame.getCamera();
