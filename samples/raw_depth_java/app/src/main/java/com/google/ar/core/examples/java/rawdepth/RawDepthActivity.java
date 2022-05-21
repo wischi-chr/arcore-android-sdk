@@ -29,7 +29,6 @@ import com.google.ar.core.Config;
 import com.google.ar.core.Frame;
 import com.google.ar.core.Session;
 import com.google.ar.core.TrackingState;
-import com.google.ar.core.examples.java.common.helpers.CameraPermissionHelper;
 import com.google.ar.core.examples.java.common.helpers.TrackingStateHelper;
 import com.google.ar.core.exceptions.CameraNotAvailableException;
 import com.google.ar.core.exceptions.NotYetAvailableException;
@@ -110,13 +109,6 @@ public class RawDepthActivity extends AppCompatActivity implements GLSurfaceView
             break;
         }
 
-        // ARCore requires camera permissions to operate. If we did not yet obtain runtime
-        // permission on Android M and above, now is a good time to ask the user for it.
-        if (!CameraPermissionHelper.hasCameraPermission(this)) {
-          CameraPermissionHelper.requestCameraPermission(this);
-          return;
-        }
-
         // Create the session.
         session = new Session(/* context= */ this);
       } catch (UnavailableArcoreNotInstalledException
@@ -169,20 +161,6 @@ public class RawDepthActivity extends AppCompatActivity implements GLSurfaceView
       // calling session.update() on a paused session.
       surfaceView.onPause();
       session.pause();
-    }
-  }
-
-  @Override
-  public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] results) {
-    super.onRequestPermissionsResult(requestCode, permissions, results);
-    if (!CameraPermissionHelper.hasCameraPermission(this)) {
-      Toast.makeText(this, "Camera permission is needed to run this application", Toast.LENGTH_LONG)
-          .show();
-      if (!CameraPermissionHelper.shouldShowRequestPermissionRationale(this)) {
-        // Permission denied with checking "Do not ask again".
-        CameraPermissionHelper.launchPermissionSettings(this);
-      }
-      finish();
     }
   }
 
