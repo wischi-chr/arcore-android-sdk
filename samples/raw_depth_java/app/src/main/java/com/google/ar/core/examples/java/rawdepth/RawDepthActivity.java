@@ -47,9 +47,6 @@ import javax.microedition.khronos.opengles.GL10;
 public class RawDepthActivity extends AppCompatActivity implements GLSurfaceView.Renderer {
   private static final String TAG = RawDepthActivity.class.getSimpleName();
 
-  // Rendering. The Renderers are created here, and initialized when the GL surface is created.
-  private GLSurfaceView surfaceView;
-
   private boolean installRequested;
 
   private Session session;
@@ -61,15 +58,6 @@ public class RawDepthActivity extends AppCompatActivity implements GLSurfaceView
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_main);
-    surfaceView = findViewById(R.id.surfaceview);
-
-    // Set up rendering.
-    surfaceView.setPreserveEGLContextOnPause(true);
-    surfaceView.setEGLContextClientVersion(2);
-    surfaceView.setEGLConfigChooser(8, 8, 8, 0, 16, 0);
-    surfaceView.setRenderer(this);
-    surfaceView.setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
-    surfaceView.setWillNotDraw(false);
 
     installRequested = false;
   }
@@ -143,8 +131,6 @@ public class RawDepthActivity extends AppCompatActivity implements GLSurfaceView
       session = null;
       return;
     }
-
-    surfaceView.onResume();
   }
 
   @Override
@@ -154,26 +140,20 @@ public class RawDepthActivity extends AppCompatActivity implements GLSurfaceView
       // Note that the order matters - see note in onResume().
       // GLSurfaceView is paused before pausing the ARCore session, to prevent onDrawFrame() from
       // calling session.update() on a paused session.
-      surfaceView.onPause();
       session.pause();
     }
   }
 
   @Override
   public void onSurfaceCreated(GL10 gl, EGLConfig config) {
-    GLES20.glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
   }
 
   @Override
   public void onSurfaceChanged(GL10 gl, int width, int height) {
-    GLES20.glViewport(0, 0, width, height);
   }
 
   @Override
   public void onDrawFrame(GL10 gl) {
-    // Clear screen to notify driver it should not load any pixels from previous frame.
-    GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
-
     if (session == null) {
       return;
     }
