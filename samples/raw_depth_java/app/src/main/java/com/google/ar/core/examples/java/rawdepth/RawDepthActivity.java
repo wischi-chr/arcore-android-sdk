@@ -165,7 +165,6 @@ public class RawDepthActivity extends AppCompatActivity implements GLSurfaceView
 
         Frame frame = session.update();
         Camera camera = frame.getCamera();
-        camera.getTrackingState();
 
         try (Image ignored = frame.acquireRawDepthImage16Bits()) {
 
