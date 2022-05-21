@@ -21,7 +21,7 @@ import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.util.Log;
-import android.widget.Toast;
+
 import androidx.appcompat.app.AppCompatActivity;
 import com.google.ar.core.ArCoreApk;
 import com.google.ar.core.Camera;
@@ -29,7 +29,6 @@ import com.google.ar.core.Config;
 import com.google.ar.core.Frame;
 import com.google.ar.core.Session;
 import com.google.ar.core.TrackingState;
-import com.google.ar.core.examples.java.common.helpers.TrackingStateHelper;
 import com.google.ar.core.exceptions.CameraNotAvailableException;
 import com.google.ar.core.exceptions.NotYetAvailableException;
 import com.google.ar.core.exceptions.UnavailableApkTooOldException;
@@ -54,13 +53,9 @@ public class RawDepthActivity extends AppCompatActivity implements GLSurfaceView
   private boolean installRequested;
 
   private Session session;
-  private final TrackingStateHelper trackingStateHelper = new TrackingStateHelper(this);
 
   // This lock prevents accessing the frame images while Session is paused.
   private final Object frameInUseLock = new Object();
-
-  /** The current raw depth image timestamp. */
-  private long depthTimestamp = -1;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -191,9 +186,6 @@ public class RawDepthActivity extends AppCompatActivity implements GLSurfaceView
         Frame frame = session.update();
         Camera camera = frame.getCamera();
 
-        // Keep the screen unlocked while tracking, but allow it to lock when tracking stops.
-        trackingStateHelper.updateKeepScreenOnFlag(camera.getTrackingState());
-
         if (camera.getTrackingState() != TrackingState.TRACKING) {
           // If motion tracking is not available but previous depth is available, notify the user
           // that the app will resume with tracking.
@@ -202,15 +194,11 @@ public class RawDepthActivity extends AppCompatActivity implements GLSurfaceView
           return;
         }
 
-        // Check if the frame contains new depth data or a 3D reprojection of the previous data. See
-        // documentation of acquireRawDepthImage16Bits for more details.
-        boolean containsNewDepthData;
-        try (Image depthImage = frame.acquireRawDepthImage16Bits()) {
-          containsNewDepthData = depthTimestamp == depthImage.getTimestamp();
-          depthTimestamp = depthImage.getTimestamp();
+
+        try (Image ignored = frame.acquireRawDepthImage16Bits()) {
+
         } catch (NotYetAvailableException e) {
           // This is normal at the beginning of session, where depth hasn't been estimated yet.
-          containsNewDepthData = false;
         }
       } catch (Throwable t) {
         // Avoid crashing the application due to unhandled exceptions.
