@@ -212,12 +212,6 @@ public class RawDepthActivity extends AppCompatActivity implements GLSurfaceView
           // This is normal at the beginning of session, where depth hasn't been estimated yet.
           containsNewDepthData = false;
         }
-
-        if (containsNewDepthData) {
-          // Get Raw Depth data of the current frame.
-          final DepthData depth = DepthData.create(session, frame);
-        }
-
       } catch (Throwable t) {
         // Avoid crashing the application due to unhandled exceptions.
         Log.e(TAG, "Exception on the OpenGL thread", t);
