@@ -57,7 +57,6 @@ public class RawDepthActivity extends AppCompatActivity implements GLSurfaceView
   private GLSurfaceView surfaceView;
 
   private boolean installRequested;
-  private boolean depthReceived;
 
   private Session session;
   private final SnackbarHelper messageSnackbarHelper = new SnackbarHelper();
@@ -93,7 +92,6 @@ public class RawDepthActivity extends AppCompatActivity implements GLSurfaceView
     seekBar.setOnSeekBarChangeListener(seekBarChangeListener);
 
     installRequested = false;
-    depthReceived = false;
   }
 
   private SeekBar.OnSeekBarChangeListener seekBarChangeListener =
@@ -279,10 +277,6 @@ public class RawDepthActivity extends AppCompatActivity implements GLSurfaceView
         if (camera.getTrackingState() != TrackingState.TRACKING) {
           // If motion tracking is not available but previous depth is available, notify the user
           // that the app will resume with tracking.
-          if (depthReceived) {
-            messageSnackbarHelper.showMessage(
-                this, TrackingStateHelper.getTrackingFailureReasonString(camera));
-          }
 
           // If not tracking, do not render the point cloud.
           return;
@@ -302,13 +296,6 @@ public class RawDepthActivity extends AppCompatActivity implements GLSurfaceView
         if (containsNewDepthData) {
           // Get Raw Depth data of the current frame.
           final DepthData depth = DepthData.create(session, frame);
-
-          // Skip rendering the current frame if an exception arises during depth data processing.
-          // For example, before depth estimation finishes initializing.
-          if (depth != null) {
-            depthReceived = true;
-            renderer.update(depth);
-          }
         }
 
         float[] projectionMatrix = new float[16];
@@ -317,7 +304,7 @@ public class RawDepthActivity extends AppCompatActivity implements GLSurfaceView
         camera.getViewMatrix(viewMatrix, 0);
 
         // Visualize depth points.
-        renderer.draw(viewMatrix, projectionMatrix);
+        // renderer.draw(viewMatrix, projectionMatrix);
 
         // Hide all user notifications when the frame has been rendered successfully.
         messageSnackbarHelper.hide(this);
