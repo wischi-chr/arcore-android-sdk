@@ -218,10 +218,6 @@ public class RawDepthActivity extends AppCompatActivity implements GLSurfaceView
           final DepthData depth = DepthData.create(session, frame);
         }
 
-        float[] projectionMatrix = new float[16];
-        camera.getProjectionMatrix(projectionMatrix, 0, 0.1f, 100.0f);
-        float[] viewMatrix = new float[16];
-        camera.getViewMatrix(viewMatrix, 0);
       } catch (Throwable t) {
         // Avoid crashing the application due to unhandled exceptions.
         Log.e(TAG, "Exception on the OpenGL thread", t);
