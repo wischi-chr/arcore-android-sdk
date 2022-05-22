@@ -15,10 +15,6 @@ import com.google.ar.core.exceptions.CameraNotAvailableException;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
-/**
- * This is a simple example that shows how to use ARCore Raw Depth API. The application will display
- * a 3D point cloud and allow the user control the number of points based on depth confidence.
- */
 public class RawDepthActivity extends AppCompatActivity implements GLSurfaceView.Renderer {
     private static final String TAG = RawDepthActivity.class.getSimpleName();
 
@@ -32,14 +28,26 @@ public class RawDepthActivity extends AppCompatActivity implements GLSurfaceView
         try {
             session = new Session(this);
 
-            // Enable raw depth estimation and auto focus mode while ARCore is running.
             Config config = session.getConfig();
-            config.setDepthMode(Config.DepthMode.AUTOMATIC);
+            config.setDepthMode(Config.DepthMode.RAW_DEPTH_ONLY);
             session.configure(config);
 
             session.resume();
         } catch (Throwable t) {
             Log.e(TAG, "Exception creating session", t);
+        }
+    }
+
+    @Override
+    public void onDrawFrame(GL10 gl) {
+        if (session == null) {
+            return;
+        }
+
+        try {
+            session.update();
+        } catch (CameraNotAvailableException e) {
+            // Just ignore in this MRE
         }
     }
 
@@ -67,18 +75,5 @@ public class RawDepthActivity extends AppCompatActivity implements GLSurfaceView
 
     @Override
     public void onSurfaceChanged(GL10 gl, int width, int height) {
-    }
-
-    @Override
-    public void onDrawFrame(GL10 gl) {
-        if (session == null) {
-            return;
-        }
-
-        try {
-            session.update();
-        } catch (CameraNotAvailableException e) {
-            // Just ignore in this MRE
-        }
     }
 }
